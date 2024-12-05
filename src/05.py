@@ -55,16 +55,6 @@ def check_update(rules: list[tuple[int, int]], update: list[int]) -> bool:
     return True
 
 
-def order_comparison(n: int, m: int, rules) -> int:
-    for rule in rules:
-        if n == rule[0] and m == rule[1]:
-            return 1
-        elif m == rule[0] and n == rule[1]:
-            return -1
-        else:
-            return 0
-
-
 def find_valid_updates(rules: list[tuple[int, int]], updates: list[list[int]]) -> int:
     out = 0
     for update in updates:
