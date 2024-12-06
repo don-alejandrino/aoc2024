@@ -20,8 +20,6 @@ EXAMPLE1 = """
 Direction indices: up = 0, right = 1, down = 2, left = 3
 """
 
-TRANSLATIONS = [np.array([-1, 0]), np.array([0, 1]), np.array([1, 0]), np.array([0, -1])]  # up, right, down, left
-
 
 def parse_input(text: str) -> np.array:
     mat = []
@@ -31,6 +29,19 @@ def parse_input(text: str) -> np.array:
     return np.array(mat)
 
 
+def translate(direction: int, pos: tuple[int, int]) -> tuple[int, int]:
+    i, j = pos
+
+    if direction == 0:
+        return i - 1, j
+    elif direction == 1:
+        return i, j + 1
+    elif direction == 2:
+        return i + 1, j
+    else:
+        return i, j - 1
+
+
 def take_step(
         direction: int,
         pos: tuple[int, int],
@@ -38,17 +49,18 @@ def take_step(
         i_max: int,
         j_max: int
 ) -> tuple[int, np.array]:
-    next_pos = pos + TRANSLATIONS[direction]
-    if next_pos[0] < 0 or next_pos[0] >= i_max or next_pos[1] < 0 or next_pos[1] >= j_max:
+    next_i, next_j = translate(direction, pos)
+
+    if next_i < 0 or next_i >= i_max or next_j < 0 or next_j >= j_max:
         raise IndexError
 
-    while mat[tuple(next_pos)] == "#":
+    while mat[next_i, next_j] == "#":
         direction = (direction + 1) % 4
-        next_pos = pos + TRANSLATIONS[direction]
-        if next_pos[0] < 0 or next_pos[0] >= i_max or next_pos[1] < 0 or next_pos[1] >= j_max:
+        next_i, next_j = translate(direction, pos)
+        if next_i < 0 or next_i >= i_max or next_j < 0 or next_j >= j_max:
             raise IndexError
 
-    return direction, next_pos
+    return direction, (next_i, next_j)
 
 
 def count_steps(mat: np.array) -> tuple[int, set[tuple[int, int]]]:
