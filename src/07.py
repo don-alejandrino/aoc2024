@@ -26,22 +26,24 @@ def parse_input(text: str) -> list[tuple[int, list[int]]]:
 def check_validity_part_1(equation: tuple[int, list[int]]) -> bool:
     lhs, rhs = equation
 
-    rhs_agg = {rhs[0]}
-    for i in rhs[1:]:
-        rhs_agg_next = set()
-        for j in rhs_agg:
-            agg_sum = j + i
-            agg_prod = j * i
+    stack = [(rhs[0], 0)]
+    i_max = len(rhs) - 1
+
+    while stack:
+        num, i = stack.pop(-1)
+        if i < i_max:
+            next_num = rhs[i + 1]
+            agg_sum = num + next_num
+            agg_prod = num * next_num
             # eliminate branches that exceed the expected result since
             # all possible operations are monotonically increasing
             if agg_sum <= lhs:
-                rhs_agg_next.add(agg_sum)
+                stack.append((agg_sum, i + 1))
             if agg_prod <= lhs:
-                rhs_agg_next.add(agg_prod)
-        rhs_agg = rhs_agg_next
-
-    if lhs in rhs_agg:
-        return True
+                stack.append((agg_prod, i + 1))
+        else:
+            if num == lhs:
+                return True
 
     return False
 
@@ -49,23 +51,25 @@ def check_validity_part_1(equation: tuple[int, list[int]]) -> bool:
 def check_validity_part_2(equation: tuple[int, list[int]]) -> bool:
     lhs, rhs = equation
 
-    rhs_agg = {rhs[0]}
-    for i in rhs[1:]:
-        rhs_agg_next = set()
-        for j in rhs_agg:
-            agg_sum = j + i
-            agg_prod = j * i
-            agg_concat = int(f"{j}{i}")
-            if agg_sum <= lhs:
-                rhs_agg_next.add(agg_sum)
-            if agg_prod <= lhs:
-                rhs_agg_next.add(agg_prod)
-            if agg_concat <= lhs:
-                rhs_agg_next.add(agg_concat)
-        rhs_agg = rhs_agg_next
+    stack = [(rhs[0], 0)]
+    i_max = len(rhs) - 1
 
-    if lhs in rhs_agg:
-        return True
+    while stack:
+        num, i = stack.pop(-1)
+        if i < i_max:
+            next_num = rhs[i + 1]
+            agg_sum = num + next_num
+            agg_prod = num * next_num
+            agg_concat = int(f"{num}{next_num}")
+            if agg_sum <= lhs:
+                stack.append((agg_sum, i + 1))
+            if agg_prod <= lhs:
+                stack.append((agg_prod, i + 1))
+            if agg_concat <= lhs:
+                stack.append((agg_concat, i + 1))
+        else:
+            if num == lhs:
+                return True
 
     return False
 
