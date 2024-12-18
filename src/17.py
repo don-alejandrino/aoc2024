@@ -103,11 +103,12 @@ def find_correct_register_a_value(registers: list[int], instructions: list[int])
     of length equal to the length of the instructions list must be greater equal than
     8 ** (len(instructions) - 1) and less than 8 ** len(instructions).
 
-    Furthermore, because of the structure of the problem input (in each iteration, only the last 3
-    bits of the current A register value are relevant), the initial value of the A register
-    must be of the form Σ_(i = 0)^L [n_i * 8 ** i], where 0 <= n_i < 8 and L = len(instructions) - 1.
-    The factors n_i can then be found by recursively reconstructing the desired output in reverse
-    order.
+    Furthermore, because of the structure of the problem input (the B and C registers are overwritten
+    by values from the A register in each loop and therefore, there is no state transfer between two
+    different loop iterations except the integer-division of the A register), the initial value of the
+    A register must be of the form Σ_(i = 0)^L [n_i * 8 ** i], where 0 <= n_i < 8
+    and L = len(instructions) - 1. The factors n_i can then be found by recursively reconstructing the
+    desired output in reverse order.
 
     That is, let f(A) denote the output of the program for a given initial value of the A register.
     First, we find all possible n_L by solving f(n_L) == instructions[-1].
