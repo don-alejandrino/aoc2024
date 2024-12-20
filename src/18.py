@@ -49,7 +49,7 @@ def find_shortest_path(
         byte_coords: list[tuple[int, int]],
         grid_size: int,
         num_already_fallen_bytes: int
-) -> int | None:
+) -> int:
     blocked_grid_coords = set(byte_coords[:num_already_fallen_bytes])
 
     unvisited_nodes = PriorityQueue()
