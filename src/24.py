@@ -115,7 +115,7 @@ def identify_faulty_wirings(gates: dict[tuple[str, str, str], str]) -> set[str]:
         incorrect_wirings.update(find_incorrect_wirings_recursively(
             out_wire=f"z{bit:02d}",
             inv_gates_mapping=inv_gates,
-            downstream_operation="XOR",
+            downstream_operation=None,
             highest_bit_z_wire=max([out for out in gates.values() if out.startswith("z")]),
             recursion_depth=0,
             max_recursion_depth=3,
@@ -129,7 +129,7 @@ def is_wiring_incorrect(
         in_wire_2: str,
         operation: str,
         out_wire: str,
-        downstream_operation: str,
+        downstream_operation: str | None,
         highest_z_wire: str,
 ) -> bool:
     """
@@ -167,7 +167,7 @@ def is_wiring_incorrect(
 def find_incorrect_wirings_recursively(
         out_wire: str,
         inv_gates_mapping: dict[str, tuple[str, str, str]],
-        downstream_operation: str,
+        downstream_operation: str | None,
         highest_bit_z_wire: str,
         recursion_depth: int,
         max_recursion_depth: int,
