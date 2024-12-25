@@ -153,7 +153,7 @@ def is_wiring_incorrect(
         # XOR gates must not feed into OR gates
         operation == "XOR" and downstream_operation == "OR" or
 
-        # Except for the LSB input (x00 and y00 wires), AND gates must not feed into OR gates
+        # Except for the LSB input (x00 and y00 wires), AND gates must feed into OR gates only
         (
             operation == "AND" and
             downstream_operation != "OR" and not (
