@@ -140,7 +140,9 @@ def is_wiring_incorrect(
 
     return (
         # Except for the highest-bit z wire, all z wires must be the output of an XOR gate
-        out_wire.startswith("z") and out_wire != highest_z_wire and operation != "XOR" or
+        (
+            out_wire.startswith("z") and out_wire != highest_z_wire and operation != "XOR"
+        ) or
 
         # XOR gates that don't feed into z wires must have inputs from x and y wires
         (
@@ -151,12 +153,13 @@ def is_wiring_incorrect(
         ) or
 
         # XOR gates must not feed into OR gates
-        operation == "XOR" and downstream_operation == "OR" or
+        (
+            operation == "XOR" and downstream_operation == "OR"
+        ) or
 
         # Except for the LSB input (x00 and y00 wires), AND gates must feed into OR gates only
         (
-            operation == "AND" and
-            downstream_operation != "OR" and not (
+            operation == "AND" and downstream_operation != "OR" and not (
                 (in_wire_1 == "x00" and in_wire_2 == "y00") or
                 (in_wire_1 == "y00" and in_wire_2 == "x00")
             )
@@ -190,7 +193,7 @@ def find_incorrect_wirings_recursively(
                     operation,
                     highest_bit_z_wire,
                     recursion_depth + 1,
-                    max_recursion_depth
+                    max_recursion_depth,
                 )
             )
 
