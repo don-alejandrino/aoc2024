@@ -133,11 +133,37 @@ def identify_faulty_wirings(gates: dict[tuple[str, str, str], str]) -> set[str]:
             recursion_depth=0,
             max_recursion_depth=3,
         ))
+    assert len(incorrect_wirings) == 8, (
+        "Number of incorrect wirings found is not as expected "
+        "(should be 8, but found {len(incorrect_wirings)})."
+    )
 
     return incorrect_wirings
 
 
-def is_wiring_incorrect(
+def is_input_gate(in_wire_1: str, in_wire_2: str) -> bool:
+    return (
+        (in_wire_1.startswith("x") and in_wire_2.startswith("y")) or
+        (in_wire_1.startswith("y") and in_wire_2.startswith("x"))
+    )
+
+
+def is_lsb_input_gate(in_wire_1: str, in_wire_2: str) -> bool:
+    return (
+        (in_wire_1 == "x00" and in_wire_2 == "y00") or
+        (in_wire_1 == "y00" and in_wire_2 == "x00")
+    )
+
+
+def is_output_gate(out_wire: str) -> bool:
+    return out_wire.startswith("z")
+
+
+def is_highest_bit_output_gate(out_wire: str, highest_z_wire: str) -> bool:
+    return out_wire == highest_z_wire
+
+
+def is_wiring_correct(
         in_wire_1: str,
         in_wire_2: str,
         operation: str,
@@ -151,33 +177,27 @@ def is_wiring_incorrect(
     binary adder.
     """
 
-    return (
-        # Except for the highest-bit z wire, all z wires must be the output of an XOR gate
-        (
-            out_wire.startswith("z") and out_wire != highest_z_wire and operation != "XOR"
-        ) or
-
-        # XOR gates that don't feed into z wires must have inputs from x and y wires
-        (
-            operation == "XOR" and not out_wire.startswith("z") and not (
-                (in_wire_1.startswith("x") and in_wire_2.startswith("y")) or
-                (in_wire_1.startswith("y") and in_wire_2.startswith("x"))
-            )
-        ) or
-
-        # XOR gates must not feed into OR gates
-        (
-            operation == "XOR" and downstream_operation == "OR"
-        ) or
-
-        # Except for the LSB input (x00 and y00 wires), AND gates must feed into OR gates only
-        (
-            operation == "AND" and downstream_operation != "OR" and not (
-                (in_wire_1 == "x00" and in_wire_2 == "y00") or
-                (in_wire_1 == "y00" and in_wire_2 == "x00")
-            )
-        )
-    )
+    if operation == "XOR":
+        if (
+                is_input_gate(in_wire_1, in_wire_2) and downstream_operation in ("AND", "XOR") or
+                is_output_gate(out_wire) and not is_highest_bit_output_gate(out_wire, highest_z_wire)
+        ):
+            return True
+        else:
+            return False
+    elif operation == "AND":
+        if (
+                downstream_operation == "OR" and not is_lsb_input_gate(in_wire_1, in_wire_2) or
+                downstream_operation == "XOR" and is_lsb_input_gate(in_wire_1, in_wire_2)
+        ):
+            return True
+        else:
+            return False
+    elif operation == "OR":
+        if downstream_operation in ("AND", "XOR") or is_highest_bit_output_gate(out_wire, highest_z_wire):
+            return True
+        else:
+            return False
 
 
 def find_incorrect_wirings_recursively(
@@ -194,7 +214,7 @@ def find_incorrect_wirings_recursively(
     gate_info = inv_gates_mapping.get(out_wire)
     if gate_info is not None:
         (in_wire_1, in_wire_2, operation) = gate_info
-        if is_wiring_incorrect(
+        if not is_wiring_correct(
                 in_wire_1, in_wire_2, operation, out_wire, downstream_operation, highest_bit_z_wire
         ):
             incorrect_wires.add(out_wire)
