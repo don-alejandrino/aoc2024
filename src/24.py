@@ -1,5 +1,6 @@
 import time
 
+import graphviz
 
 EXAMPLE1 = """
 x00: 1
@@ -107,6 +108,18 @@ def get_output_value(cables: dict[str, bool]) -> bool:
     return out
 
 
+def visualize_circuit(gates: dict[tuple[str, str, str], str]):
+    dot = graphviz.Digraph()
+    for (in1, in2, operation), out in gates.items():
+        dot.node(out, f"{operation}", shape="box")
+        if out.startswith("z"):
+            dot.node(out + "_output", out)
+            dot.edge(out, out + "_output", out)
+        dot.edge(in1, out, in1)
+        dot.edge(in2, out, in2)
+    dot.render('graph', view=True)
+
+
 def identify_faulty_wirings(gates: dict[tuple[str, str, str], str]) -> set[str]:
     num_output_bits = len([out for out in gates.values() if out.startswith("z")])
     incorrect_wirings = set()
@@ -204,16 +217,17 @@ if __name__ == "__main__":
     with open("../inputs/24.txt", "r") as fh:
         in_text = fh.read()
 
-    circuit_input = parse_input(in_text)
+    circuit_cables, circuit_gates = parse_input(in_text)
 
     # PART 1
     start = time.perf_counter()
-    res = get_output_value(evaluate_circuit(*circuit_input))
+    res = get_output_value(evaluate_circuit(circuit_cables, circuit_gates))
     end = time.perf_counter()
     print(f"Part 1 Result: {res}. Took {(end - start) * 1000:.2f} ms.")
 
     # PART 2
+    visualize_circuit(circuit_gates)
     start = time.perf_counter()
-    res = ",".join(sorted(identify_faulty_wirings(circuit_input[1])))
+    res = ",".join(sorted(identify_faulty_wirings(circuit_gates)))
     end = time.perf_counter()
     print(f"Part 2 Result: {res}. Took {(end - start) * 1000:.2f} ms.")
